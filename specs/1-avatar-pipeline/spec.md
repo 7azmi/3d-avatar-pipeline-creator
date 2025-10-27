@@ -5,9 +5,18 @@
 **Status**: Draft
 **Input**: User description: "Build an automated, scalable pipeline that takes user-provided photos or video as input and produces a fully-rigged, lightweight 3D avatar optimized for real-time web browser-based conversation."
 
+ 
 ## User Scenarios & Testing *(mandatory)*
 
+A user-level priority from management: the ideal final product should reflect hyper-realistic
+results. Given current browser graphics constraints, the immediate product goal is to maximize
+realism of motion and conversational behavior while providing a clear, documented path for
+iterative improvements to graphical fidelity (textures/meshes) without introducing runtime
+dependencies on per-user cloud GPUs.
+
+
 ### User Story 1 - Single Photo → Conversation-Ready Avatar (Priority: P1)
+
 A user uploads one or more still photos (front/three-quarter) and receives a packaged, fully-rigged
 3D avatar optimized to run in a web browser for conversational use.
 
@@ -31,6 +40,7 @@ and exercise the conversation API.
 ---
 
 ### User Story 2 - Video / Multi-Frame Input (Priority: P2)
+
 A user provides a short video or multiple frames to improve geometry, texture fidelity, and
 expression capture. The pipeline uses temporal cues to improve face reconstruction and lip-sync
 alignment.
@@ -79,6 +89,16 @@ and more accurate viseme timing compared to single-photo baseline.
 - **FR-006**: When inputs violate the "Lightweight Web-First" or "No Recurring/Streaming Costs"
   constraints, the pipeline MUST reject the plan or return a documented, time-limited exception
   with a migration plan.
+- **FR-007**: The system MUST prioritize motion realism: generated rigs, animation timing, and
+  viseme/blendshape activations MUST produce physically plausible motion and perceptually
+  convincing lip-sync. The pipeline MUST include at least one automated motion-quality check
+  (e.g., kinematic plausibility, jitter thresholds) and a documented human-evaluation protocol
+  for perceptual validation.
+- **FR-008**: The pipeline MUST support progressive graphical-quality tiers: a default
+  lightweight tier (target artifact size and performance budgets) and one or more optional
+  refinement tiers that improve textures, normal/detail maps, or mesh resolution. Each tier
+  MUST include documented trade-offs and a clear migration path from lightweight to higher
+  fidelity artifacts.
 
 ### Non-Functional Requirements
 
@@ -89,6 +109,8 @@ and more accurate viseme timing compared to single-photo baseline.
   per-user GPU services.
 - **NFR-003**: The pipeline SHOULD emit measurable quality/confidence scores for mesh, texture,
   and viseme alignment.
+- **NFR-004**: Motion realism metrics and human-evaluation results MUST be recordable and
+  attached to the Artifact metadata so the team can track improvements across refinements.
 
 ## Key Entities *(include if feature involves data)*
 
@@ -103,7 +125,7 @@ and more accurate viseme timing compared to single-photo baseline.
 ### Measurable Outcomes
 
 - **SC-001**: End-to-end pipeline (single-photo input) completes and produces a conversation-ready
-  runtime package in <= 30 seconds on a standard CI build agent (document the agent spec in plan).
+  runtime package in <= 2 minutes on a standard CI build agent (document the agent spec in plan).
 - **SC-002**: The produced runtime package (compressed, transmission-ready) is <= 15 MB for the
   default quality tier and loads and is interactive in a modern browser within 3 seconds on a
   typical consumer connection.
@@ -112,6 +134,14 @@ and more accurate viseme timing compared to single-photo baseline.
   short utterances (evaluation via test harness or human eval).
 - **SC-004**: Artifact provenance is recorded and the same deterministic inputs + pipeline
   configuration reproduce identical artifact hashes.
+- **SC-005**: Motion realism: in a blinded human rating (sample size N≥30 utterances across
+  multiple subjects), at least 80% of ratings must judge motion and lip-sync as "natural" or
+  better when compared against a baseline (single-photo pipeline). The plan MUST describe the
+  evaluation protocol and target sample size.
+- **SC-006**: Graphics refinement roadmap: the pipeline MUST demonstrate a higher-fidelity
+  refinement tier that improves perceptual texture/mesh quality while documenting the
+  incremental increase in artifact size and load time; this tier is not required to meet the
+  lightweight runtime budgets but MUST have a documented packaging/migration path.
 
 ## Assumptions
 
@@ -121,6 +151,12 @@ and more accurate viseme timing compared to single-photo baseline.
   load <3s. These may be adjusted and must be documented in each plan.
 - CI/build agents for initial validation are allowed to use cloud GPUs for offline preprocessing
   (build-time only).
+
+- Management explicitly prioritizes realism of motion and conversational behavior over
+  photorealistic graphics at runtime. Graphics realism is a secondary goal achieved via
+  iterative refinement tiers; web runtime constraints (no default GPU access) mean visual
+  fidelity improvements must be achieved via asset optimization and progressive enhancement,
+  not by relying on runtime cloud GPUs.
 
 ## Acceptance Tests (high level)
 
